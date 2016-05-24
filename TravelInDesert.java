@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /* ------------------------------------------
  * Travel In Desert Algorithm
@@ -20,6 +22,23 @@ import java.io.InputStreamReader;
  */
 public class TravelInDesert {
 	
+	List<Oasis> graph;
+	Oasis startPoint;
+	Oasis endPoint;
+	
+	public class Oasis {
+		int id;
+		boolean visited = false;
+		List<Path> paths = new ArrayList<Path>();
+	}
+	
+	public class Path {
+		double temperature;
+		double distance;
+		Oasis oasis1;
+		Oasis oasis2;
+	}
+	
 	public static void main(String[] args) {
 		TravelInDesert travelInDesert = new TravelInDesert();
 		travelInDesert.start();
@@ -32,11 +51,81 @@ public class TravelInDesert {
 		
 		if (input == "") { //indicates an error
 			start();	//start over
+		} else {
+			parseInput(input);
+			
 		}
 		
 		//print("20 10 37.1 10.1".matches("^\\d+\\s\\d+\\s\\d+(\\.\\d{1})\\s\\d+(\\.\\d{1})$"));
 	}
 	
+	/*
+	 * Process Input
+	 */
+	public void parseInput(String input) {
+		
+		
+		String[] substrings = input.split("\n");
+		
+		String firstLine = substrings[0];
+		String secondLine = substrings[1];
+		
+		graph = initializeGraph(firstLine, secondLine);
+		
+		for (int i = 2 ; i < substrings.length ; i++) {
+			String line = substrings[i];
+			parsePath(line);
+		}
+		
+		
+	}
+	
+	/*
+	 * Initialize number of oasis in the list
+	 */
+	public List<Oasis> initializeGraph(String firstLine, String secondLine) {
+		List<Oasis> graph = new ArrayList<Oasis>();
+		
+		String[] substrings = firstLine.split(" ");
+		String[] substrings_destin = secondLine.split(" ");
+		
+		int numberOfOasis = Integer.parseInt(substrings[0]);
+		int startPoint = Integer.parseInt(substrings_destin[0]);
+		int endPoint = Integer.parseInt(substrings_destin[1]);
+		
+		for (int i = 0 ; i < numberOfOasis ; i++ ) {
+			Oasis oasis = new Oasis();
+			oasis.id = i+1;
+			graph.add(oasis);
+		}
+		
+		this.startPoint = graph.get(startPoint-1);
+		this.endPoint = graph.get(endPoint-1);
+		
+		return graph;
+	}
+	
+	/*
+	 * Parse path string and creates the object and connections
+	 */
+	public void parsePath(String input) {
+		String[] substrings = input.split(" ");
+		
+		int oasis1 = Integer.parseInt(substrings[0]);
+		int oasis2 = Integer.parseInt(substrings[1]);
+		double temperature = Double.parseDouble(substrings[2]);
+		double distance = Double.parseDouble(substrings[3]);
+		
+		Path path = new Path();
+		path.temperature = temperature;
+		path.distance = distance;
+		path.oasis1 = this.graph.get(oasis1-1);
+		path.oasis2 = this.graph.get(oasis2-1);
+		
+		path.oasis1.paths.add(path);
+		path.oasis2.paths.add(path);
+		
+	}
 	
 	/*
 	 *  Get user input or use default input
@@ -86,7 +175,7 @@ public class TravelInDesert {
 				String info = reader.readLine();
 				
 				while(!info.matches(oasesRegex)) {
-					print("line does not match regex. \nLine should be 2 integers, followed by 2 decimals with one decimal point.\nTry again:");
+					print("This line does not match regex. \nLine should be 2 integers, followed by 2 decimals with one decimal point.\nTry again:");
 					info = reader.readLine();
 				}
 				
